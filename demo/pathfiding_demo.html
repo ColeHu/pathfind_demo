@@ -70,7 +70,7 @@
 
 			const gltfLoader = new THREE.GLTFLoader();
 
-			gltfLoader.load( 'meshes/panel.glb', function( gltf ) {
+			gltfLoader.load( 'meshes/floor.glb', function( gltf ) {
 
 				const levelMesh = gltf.scene.children[0];
 				const levelMat = new THREE.MeshStandardMaterial({
@@ -84,7 +84,7 @@
 				scene.add(levelMesh);
 			}, null);
 
-			gltfLoader.load( 'meshes/panel.nav.glb', function( gltf ) {
+			gltfLoader.load( 'meshes/floor.nav.glb', function( gltf ) {
 
 				const _navmesh = gltf.scene.children[0];
 
