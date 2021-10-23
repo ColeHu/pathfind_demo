@@ -94,12 +94,12 @@
 
 				pathfinder.setZoneData( ZONE, zone );
 
-				const navWireframe = new THREE.Mesh(_navmesh.geometry, new THREE.MeshBasicMaterial({
-					color: 0xffffff,
-					wireframe: true
-				}));
-				navWireframe.position.y = OFFSET / 2;
-				scene.add(navWireframe);
+				// const navWireframe = new THREE.Mesh(_navmesh.geometry, new THREE.MeshBasicMaterial({
+				// 	color: 0xffffff,
+				// 	wireframe: true
+				// }));
+				// navWireframe.position.y = OFFSET / 2;
+				// scene.add(navWireframe);
 
 				navmesh = new THREE.Mesh(_navmesh.geometry, new THREE.MeshBasicMaterial({
 					color: Color.NAVMESH,
@@ -107,7 +107,7 @@
 					transparent: true
 				}));
 
-				scene.add(navmesh);
+				//scene.add(navmesh);
 
 				// Set the player's navigation mesh group
 				groupID = pathfinder.getGroup( ZONE, playerPosition );	//定义navigation mesh组
