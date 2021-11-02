@@ -5,12 +5,15 @@
 <title>demo</title>
 <link href="style.css" rel="stylesheet">
 <script src="https://unpkg.com/three@0.124.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.124.0/examples/js/libs/dat.gui.min.js" type="text/javascript"></script>
 <script src="https://unpkg.com/three@0.124.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://unpkg.com/three@0.124.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="./dist/three-pathfinding.umd.js"></script>
 <body>
 
-    <script type="module">
+    <script>
+
+
         const Color = {
             GROUND: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
             NAVMESH: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
@@ -26,7 +29,8 @@
         let level, navmesh;
         let groupID, path;
 
-        const playerPos = new THREE.Vector3( 5.2, 3, 5.2)
+        const playerPos = new THREE.Vector3( 5.2, 3, 5.2);
+        const startPos = playerPos;
         const targetPos = new THREE.Vector3();
 
         const pathFinder = new THREE.Pathfinding();
@@ -38,8 +42,6 @@
         const scene = new THREE.Scene();
         scene.add(helper);
 
-        const ambient = new THREE.AmbientLight( 0x00001a );
-        scene.add( ambient );
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
         camera.position.set(50, 50, 50);
@@ -47,20 +49,36 @@
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0xffffff);
-        renderer.shadowMap.enabled = true
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // renderer.shadowMap.enabled = true
+        // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        //controls.damping = 0.2;
+        controls.damping = 0.2;
 
-        //const ambient = new THREE.AmbientLight(0x00001a);
-        //scene.add(ambient);
+        const ambient = new THREE.AmbientLight(0x00001a);
+        scene.add(ambient);
 
-        const directionalLight = new THREE.PointLight(0xffeedd);
+        const directionalLight = new THREE.PointLight(0xffeedd, 1);
         directionalLight.position.set(100, 100, 100);
-        directionalLight.castShadow = true;
+        // directionalLight.castShadow = true;
         scene.add(directionalLight);
+
+
+        //添加调试菜单
+        let gui = new dat.GUI();
+        let params = {
+            亮度: 1,
+
+            重设位置: function (){
+                helper.setPlayerPosition(new THREE.Vector3(5.2, 3, 5.2));
+                helper.setTargetPosition(new THREE.Vector3(5.2, 3, 5.2));
+                playerPos.copy(new THREE.Vector3(5.2, 3, 5.2));
+            }
+
+        }
+        gui.add(params, '亮度', 1, 2);
+        gui.add(params, '重设位置');
 
 
         GLTFinit();
@@ -80,8 +98,8 @@
                     metalness: 0
                 })
                 level = new THREE.Mesh(levelMesh.geometry, meshMaterial);
-                level.castShadow = true;
-                level.receiveShadow = true;
+                // level.castShadow = true;
+                // level.receiveShadow = true;
                 window.level = level;
                 scene.add(levelMesh);
             }, null);
@@ -181,6 +199,7 @@
         }
 
         function render(){
+            directionalLight.intensity = params.亮度;
             requestAnimationFrame(render);
             tick(clock.getDelta());
             renderer.render(scene, camera);
