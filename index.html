@@ -68,7 +68,7 @@
         //添加调试菜单
         let gui = new dat.GUI();
         let params = {
-            亮度: 1,
+            灯光亮度: 1,
 
             重设位置: function (){
                 helper.setPlayerPosition(new THREE.Vector3(5.2, 3, 5.2));
@@ -76,7 +76,7 @@
             }
 
         }
-        gui.add(params, '亮度', 1, 2);
+        gui.add(params, '灯光亮度', 1, 2);
         gui.add(params, '重设位置');
 
 
@@ -198,7 +198,7 @@
         }
 
         function render(){
-            directionalLight.intensity = params.亮度;
+            directionalLight.intensity = params.灯光亮度;
             requestAnimationFrame(render);
             tick(clock.getDelta());
             renderer.render(scene, camera);
