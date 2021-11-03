@@ -72,7 +72,11 @@
 
             重设位置: function (){
                 helper.setPlayerPosition(new THREE.Vector3(5.2, 3, 5.2));
+                helper.setTargetPosition(new THREE.Vector3(5.2, 3, 5.2));
                 playerPos.copy(new THREE.Vector3(5.2, 3, 5.2));
+                targetPos.copy(new THREE.Vector3(5.2, 3, 5.2));
+                path = pathFinder.findPath(playerPos, targetPos,ZONE, groupID);
+                helper.setPath(path);
             }
 
         }
