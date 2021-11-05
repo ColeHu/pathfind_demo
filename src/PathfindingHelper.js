@@ -31,7 +31,7 @@ class PathfindingHelper extends Object3D {
     super();
 
     this._playerMarker = new Mesh(
-      new SphereBufferGeometry( 5, 32, 32 ),
+      new SphereBufferGeometry( 1, 26, 26 ),
       new MeshBasicMaterial( { color: colors.PLAYER } )
     );
 

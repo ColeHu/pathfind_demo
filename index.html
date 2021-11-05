@@ -20,7 +20,7 @@
         };
 
         const ZONE = 'level';
-        const SPEED = 20;
+        const SPEED = 10;
         const OFFSET = 0.2;
 
         THREE.Pathfinding = threePathfinding.Pathfinding;
@@ -29,8 +29,7 @@
         let level, navmesh;
         let groupID, path;
 
-        const playerPos = new THREE.Vector3( 5.2, 3, 5.2);
-        const startPos = playerPos;
+        const playerPos = new THREE.Vector3( 2, -0.5, 0);
         const targetPos = new THREE.Vector3();
 
         const pathFinder = new THREE.Pathfinding();
@@ -71,29 +70,30 @@
             灯光亮度: 1,
 
             重设位置: function (){
-                helper.setPlayerPosition(new THREE.Vector3(5.2, 3, 5.2));
-                helper.setTargetPosition(new THREE.Vector3(5.2, 3, 5.2));
-                playerPos.copy(new THREE.Vector3(5.2, 3, 5.2));
-                targetPos.copy(new THREE.Vector3(5.2, 3, 5.2));
-                path = pathFinder.findPath(playerPos, targetPos,ZONE, groupID);
-                helper.setPath(path);
+                helper.setPlayerPosition(new THREE.Vector3(2, -0.5, 0));
+                helper.setTargetPosition(new THREE.Vector3(2, -0.5, 0));
+                playerPos.copy(new THREE.Vector3(2, -0.5, 0));
+                targetPos.copy(new THREE.Vector3(2, -0.5, 0));
+                //path = pathFinder.findPath(playerPos, targetPos,ZONE, groupID);
+                //helper.setPath(path);
             }
+
 
         }
         gui.add(params, '灯光亮度', 1, 2);
         gui.add(params, '重设位置');
 
-
+        scene.add(THREE.AxisHelper(1000))
         GLTFinit();
         render();
 
 
-
+        //加载模型
         function GLTFinit(){
             const gltfLoader = new THREE.GLTFLoader();
-            gltfLoader.load('./demo/meshes/floor.glb', function (gltf){
-
+            gltfLoader.load('./my_mesh/t2.glb', function (gltf){
                 const levelMesh = gltf.scene.children[0];
+                levelMesh.position.set(-15, -0.6, 11);
                 const meshMaterial = new THREE.MeshStandardMaterial({
                     color: Color.GROUND,
                     flatShading: true,
@@ -104,22 +104,21 @@
                 // level.castShadow = true;
                 // level.receiveShadow = true;
                 window.level = level;
+                //levelMesh.rotateZ(3 * Math.PI / 4)
                 scene.add(levelMesh);
             }, null);
 
-            gltfLoader.load('./demo/meshes/floor.nav.glb', function (gltf) {
-                const navMesh = gltf.scene.children[0];
-
+            gltfLoader.load('./my_mesh/t2.navmesh1.glb', function (gltf) {
+                const navMesh = gltf.scene.children[0]
                 const zone = THREE.Pathfinding.createZone(navMesh.geometry);
-
                 pathFinder.setZoneData(ZONE, zone);
 
-                // const navWireframe = new THREE.Mesh(navMesh.geometry, new THREE.MeshBasicMaterial({
-                //     color: 0xffffff,
-                //     wireframe: true
-                // }));
-                // navWireframe.position.y = OFFSET / 2;
-                // scene.add(navWireframe);
+                const navWireframe = new THREE.Mesh(navMesh.geometry, new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    wireframe: true
+                }));
+                navWireframe.position.y = OFFSET / 2;
+                scene.add(navWireframe);
 
                 navmesh = new THREE.Mesh(navMesh.geometry, new THREE.MeshBasicMaterial({
                     color: Color.NAVMESH,
@@ -127,14 +126,14 @@
                     transparent: true
                 }));
 
-                //scene.add(navmesh);
+                scene.add(navmesh);
 
                 groupID = pathFinder.getGroup(ZONE, playerPos);
 
             }, null);
 
-            helper.setPlayerPosition(new THREE.Vector3(5.2, 3, 5.2));
-            helper.setTargetPosition(new THREE.Vector3(5.2, 3, 5.2));
+            helper.setPlayerPosition(new THREE.Vector3(2, -0.5, 0));
+            helper.setTargetPosition(new THREE.Vector3(2, -0.5, 0));
             document.addEventListener('click', onDocumentMouseUp, false);
             window.addEventListener('resize', onWindowResize, false);
         }
@@ -184,7 +183,6 @@
                 const closestPlayerNode = pathFinder.getClosestNode( playerPosition, ZONE, groupID );
                 const clamped = new THREE.Vector3();
 
-                // TODO(donmccurdy): Don't clone targetPosition, fix the bug.
                 pathFinder.clampStep(
                     playerPos, targetPos.clone(), closestPlayerNode, ZONE, groupID, clamped );
 
@@ -192,6 +190,7 @@
             }
         }
 
+        //适应高分辨率设备
         function onWindowResize() {
 
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -201,6 +200,8 @@
 
         }
 
+
+        //渲染动画
         function render(){
             directionalLight.intensity = params.灯光亮度;
             requestAnimationFrame(render);
