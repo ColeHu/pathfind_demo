@@ -9,186 +9,207 @@
 <script src="https://unpkg.com/three@0.124.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://unpkg.com/three@0.124.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="./dist/three-pathfinding.umd.js"></script>
+<script src="./src/initBack.js"></script>
 <body>
 
-    <script>
+<script>
 
 
-        const Color = {
-            GROUND: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
-            NAVMESH: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
-        };
+    const Color = {
+        GROUND: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
+        NAVMESH: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
+    };
 
-        const ZONE = 'level';
-        const SPEED = 10;
-        const OFFSET = 0.2;
+    const ZONE = 'level';
+    const SPEED = 10;
+    const OFFSET = 0.2;
 
-        THREE.Pathfinding = threePathfinding.Pathfinding;
-        THREE.PathfindingHelper = threePathfinding.PathfindingHelper;
+    THREE.Pathfinding = threePathfinding.Pathfinding;
+    THREE.PathfindingHelper = threePathfinding.PathfindingHelper;
 
-        let level, navmesh;
-        let groupID, path;
+    let level, navmesh;
+    let groupID, path;
 
-        const playerPos = new THREE.Vector3( 2, -0.5, 0);
-        const targetPos = new THREE.Vector3();
+    const playerPos = new THREE.Vector3( 20, -0.5, 20);
+    const targetPos = new THREE.Vector3();
 
-        const pathFinder = new THREE.Pathfinding();
-        const helper = new THREE.PathfindingHelper();
-        const mouse = new THREE.Clock();
-        const clock = new THREE.Clock();
-        const raycaster = new THREE.Raycaster();
+    const pathFinder = new THREE.Pathfinding();
+    const helper = new THREE.PathfindingHelper();
+    const mouse = new THREE.Clock();
+    const clock = new THREE.Clock();
+    const raycaster = new THREE.Raycaster();
 
-        const scene = new THREE.Scene();
-        scene.add(helper);
-
-
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-        camera.position.set(50, 50, 50);
-
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0xffffff);
-        // renderer.shadowMap.enabled = true
-        // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.body.appendChild(renderer.domElement);
-
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.damping = 0.2;
-
-        const ambient = new THREE.AmbientLight(0x00001a);
-        scene.add(ambient);
-
-        const directionalLight = new THREE.PointLight(0xffeedd, 1);
-        directionalLight.position.set(100, 100, 100);
-        // directionalLight.castShadow = true;
-        scene.add(directionalLight);
+    const scene = new THREE.Scene();
+    scene.add(helper);
 
 
-        //添加调试菜单
-        let gui = new dat.GUI();
-        let params = {
-            灯光亮度: 1,
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.set(50, 50, 50);
 
-            重设位置: function (){
-                helper.setPlayerPosition(new THREE.Vector3(2, -0.5, 0));
-                helper.setTargetPosition(new THREE.Vector3(2, -0.5, 0));
-                playerPos.copy(new THREE.Vector3(2, -0.5, 0));
-                targetPos.copy(new THREE.Vector3(2, -0.5, 0));
-                //path = pathFinder.findPath(playerPos, targetPos,ZONE, groupID);
-                //helper.setPath(path);
-            }
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xffffff);
+    //开启阴影
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.damping = 0.2;
+
+    const ambient = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(ambient);
+
+    const directionalLight = new THREE.PointLight(0xffeedd, 1);
+    directionalLight.position.set(0, 100, 0);
+     directionalLight.castShadow = true;
+    scene.add(directionalLight);
 
 
-        }
-        gui.add(params, '灯光亮度', 1, 2);
-        gui.add(params, '重设位置');
+    //添加调试菜单
+    let gui = new dat.GUI();
+    let params = {
+        灯光亮度: 1,
 
-        scene.add(THREE.AxisHelper(1000))
-        GLTFinit();
-        render();
-
-
-        //加载模型
-        function GLTFinit(){
-            const gltfLoader = new THREE.GLTFLoader();
-            gltfLoader.load('./my_mesh/t2.glb', function (gltf){
-                const levelMesh = gltf.scene.children[0];
-                levelMesh.position.set(-15, -0.6, 11);
-                const meshMaterial = new THREE.MeshStandardMaterial({
-                    color: Color.GROUND,
-                    flatShading: true,
-                    roughness: 1,
-                    metalness: 0
-                })
-                level = new THREE.Mesh(levelMesh.geometry, meshMaterial);
-                // level.castShadow = true;
-                // level.receiveShadow = true;
-                window.level = level;
-                //levelMesh.rotateZ(3 * Math.PI / 4)
-                scene.add(levelMesh);
-            }, null);
-
-            gltfLoader.load('./my_mesh/t2.navmesh1.glb', function (gltf) {
-                const navMesh = gltf.scene.children[0]
-                const zone = THREE.Pathfinding.createZone(navMesh.geometry);
-                pathFinder.setZoneData(ZONE, zone);
-
-                const navWireframe = new THREE.Mesh(navMesh.geometry, new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
-                    wireframe: true
-                }));
-                navWireframe.position.y = OFFSET / 2;
-                scene.add(navWireframe);
-
-                navmesh = new THREE.Mesh(navMesh.geometry, new THREE.MeshBasicMaterial({
-                    color: Color.NAVMESH,
-                    opacity: 0.75,
-                    transparent: true
-                }));
-
-                scene.add(navmesh);
-
-                groupID = pathFinder.getGroup(ZONE, playerPos);
-
-            }, null);
-
-            helper.setPlayerPosition(new THREE.Vector3(2, -0.5, 0));
-            helper.setTargetPosition(new THREE.Vector3(2, -0.5, 0));
-            document.addEventListener('click', onDocumentMouseUp, false);
-            window.addEventListener('resize', onWindowResize, false);
+        重设位置: function (){
+            helper.setPlayerPosition(new THREE.Vector3( 20, -0.5, 20));
+            helper.setTargetPosition(new THREE.Vector3( 20, -0.5, 20));
+            playerPos.copy(new THREE.Vector3( 20, -0.5, 20));
+            targetPos.copy(new THREE.Vector3( 20, -0.5, 20));
+            //path = pathFinder.findPath(playerPos, targetPos,ZONE, groupID);
+            //helper.setPath(path);
         }
 
-        function onDocumentMouseUp(event){
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-            camera.updateMatrixWorld();
+    }
+    scene.add(THREE.AxisHelper(1000))
 
-            raycaster.setFromCamera(mouse, camera);
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load('../resource/skybox/tears_of_steel_bridge_2k.jpg', function (){
+        const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+        rt.fromEquirectangularTexture(renderer, texture);
+        scene.background = rt.texture;
+    })
 
-            const intersects = raycaster.intersectObject(navmesh);
-            if(!intersects.length) return;
+    gui.add(params, '灯光亮度', 1, 2);
+    gui.add(params, '重设位置');
 
-            targetPos.copy(intersects[0].point);
-
-            helper.reset();
-            helper.setPlayerPosition(playerPos);
-
-            if (event.metaKey || event.ctrlKey || event.button === 2) {
-
-                path = null;
-                groupID = pathFinder.getGroup(ZONE, targetPos, true);
-                const closestNode = pathFinder.getClosestNode( playerPos, ZONE, groupID, true );
-
-                helper.setPlayerPosition( playerPos.copy( targetPos ) )
-                if ( closestNode ) helper.setNodePosition( closestNode.centroid );
-
-                return;
-
-            }
-
-            const targetGroupID = pathFinder.getGroup(ZONE, targetPos);
-            const closestTargetNode = pathFinder.getClosestNode(targetPos, ZONE, targetGroupID,true)
+    GLTFinit();
+    render();
 
 
-            helper.setTargetPosition(targetPos);
-            if(closestTargetNode) helper.setNodePosition(closestTargetNode);
+    //加载模型
+    function GLTFinit(){
+        const gltfLoader = new THREE.GLTFLoader();
+        gltfLoader.load('./resource/meshes/t2.glb', function (gltf){
+            const levelMesh = gltf.scene.children[0];
+            levelMesh.scale.set(-1, 1, 1)
+            levelMesh.rotateZ(-Math.PI / 4)
+            levelMesh.position.set(-40, -0.6, 48);
+            const meshMaterial = new THREE.MeshStandardMaterial({
+                color: Color.GROUND,
+                flatShading: true,
+                roughness: 1,
+                metalness: 0
+            })
+            level = new THREE.Mesh(levelMesh.geometry, meshMaterial);
+            level.castShadow = true;
+            level.receiveShadow = true;
+            window.level = level;
+            //levelMesh.rotateZ(3 * Math.PI / 4)
+            scene.add(levelMesh);
+        }, null);
 
-            path = pathFinder.findPath(playerPos, targetPos,ZONE, groupID);
+        gltfLoader.load('./resource/meshes/t2.navmesh1.glb', function (gltf) {
+            const navMesh = gltf.scene.children[0]
+            navMesh.geometry.scale(3.3, 3.3, 3.3)
+            const zone = THREE.Pathfinding.createZone(navMesh.geometry);
+            pathFinder.setZoneData(ZONE, zone);
 
-            if(path && path.length){
-                helper.setPath(path);
-            }
-            else{
-                const closestPlayerNode = pathFinder.getClosestNode( playerPosition, ZONE, groupID );
-                const clamped = new THREE.Vector3();
+            //添加导航线
+            // const navWireframe = new THREE.Mesh(navMesh.geometry, new THREE.MeshBasicMaterial({
+            //     color: 0xffffff,
+            //     wireframe: true
+            // }));
+            // navWireframe.position.y = OFFSET / 2;
+            // scene.add(navWireframe);
 
-                pathFinder.clampStep(
-                    playerPos, targetPos.clone(), closestPlayerNode, ZONE, groupID, clamped );
+            navmesh = new THREE.Mesh(navMesh.geometry, new THREE.MeshBasicMaterial({
+                color: Color.NAVMESH,
+                opacity: 0,
+                transparent: true
+            }));
 
-                helper.setStepPosition( clamped );
-            }
+            //添加导航网格
+            scene.add(navmesh);
+
+            groupID = pathFinder.getGroup(ZONE, playerPos);
+
+        }, null);
+
+        helper.setPlayerPosition(new THREE.Vector3( 20, -0.5, 20));
+        helper.setTargetPosition(new THREE.Vector3( 20, -0.5, 20));
+        document.addEventListener('click', onDocumentMouseUp, false);
+        window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function onDocumentMouseUp(event) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        camera.updateMatrixWorld();
+
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObject(navmesh);
+        if (!intersects.length) return;
+
+        targetPos.copy(intersects[0].point);
+
+        helper.reset();
+        helper.setPlayerPosition(playerPos);
+
+        if (event.metaKey || event.ctrlKey || event.button === 2) {
+
+            path = null;
+            groupID = pathFinder.getGroup(ZONE, targetPos, true);
+            const closestNode = pathFinder.getClosestNode(playerPos, ZONE, groupID, true);
+
+            helper.setPlayerPosition(playerPos.copy(targetPos))
+            if (closestNode) helper.setNodePosition(closestNode.centroid);
+
+            return;
+
         }
+
+        const targetGroupID = pathFinder.getGroup(ZONE, targetPos);
+        const closestTargetNode = pathFinder.getClosestNode(targetPos, ZONE, targetGroupID, true)
+
+
+        helper.setTargetPosition(targetPos);
+        if (closestTargetNode) helper.setNodePosition(closestTargetNode);
+
+        path = pathFinder.findPath(playerPos, targetPos, ZONE, groupID);
+
+        if (path && path.length) {
+            helper.setPath(path);
+        }
+        //解决用户标记来回抽搐问题
+        else{
+            let closeNode;
+            //寻找距当前点距离为i的点
+            for(let i = 1; i < 10; i++){
+                if(closeNode &&
+                   closeNode.x &&
+                   closeNode.y &&
+                   closeNode.z) break;
+                else{
+                    closeNode = pathFinder.getRandomNode(ZONE, pathfinder.getGroup(ZONE, helper._playerMarker.position), helper._playerMarker.position, i);
+                }
+            }
+            playerPos.copy(closeNode.position);
+        }
+    }
 
         //适应高分辨率设备
         function onWindowResize() {
@@ -196,29 +217,31 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
 
-            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.setSize(window.innerWidth, window.innerHeight);
 
         }
 
 
         //渲染动画
-        function render(){
+        function render() {
+            //调整灯光亮度
             directionalLight.intensity = params.灯光亮度;
             requestAnimationFrame(render);
             tick(clock.getDelta());
             renderer.render(scene, camera);
         }
-        function tick ( dt ) {
-            if ( !level || !(path||[]).length ) return
 
-            let targetPosition = path[ 0 ];
-            const velocity = targetPosition.clone().sub( playerPos );
+        function tick(dt) {
+            if (!level || !(path || []).length) return
+
+            let targetPosition = path[0];
+            const velocity = targetPosition.clone().sub(playerPos);
 
             if (velocity.lengthSq() > 0.05 * 0.05) {
                 velocity.normalize();
                 // Move player to target
-                playerPos.add( velocity.multiplyScalar( dt * SPEED ) );
-                helper.setPlayerPosition( playerPos );
+                playerPos.add(velocity.multiplyScalar(dt * SPEED));
+                helper.setPlayerPosition(playerPos);
             } else {
                 // Remove node from the path we calculated
                 path.shift();
@@ -226,7 +249,7 @@
         }
 
 
-    </script>
+</script>
 
 </body>
 </html>
