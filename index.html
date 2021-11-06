@@ -85,7 +85,7 @@
     scene.add(THREE.AxisHelper(1000))
 
     const loader = new THREE.TextureLoader();
-    const texture = loader.load('../resource/skybox/background.jpg', function (){
+    const texture = loader.load('/resource/skybox/background.jpg', function (){
         const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
         rt.fromEquirectangularTexture(renderer, texture);
         scene.background = rt.texture;
