@@ -9,7 +9,7 @@ function initGltf(){
         levelMesh.scale.set(-1, 1, 1)
         levelMesh.rotateZ(-Math.PI / 4)
         levelMesh.position.set(-41, -0.6, 48);
-        const meshMaterial = new THREE.MeshStandardMaterial({
+        const meshMaterial = new THREE.MeshBasicMaterial({
             color: Color.GROUND,
             flatShading: true,
             roughness: 1,
