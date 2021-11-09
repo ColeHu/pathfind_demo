@@ -15,7 +15,7 @@ import {
 const colors = {
   PLAYER: new Color( 0xee836f ).convertGammaToLinear( 2.2 ).getHex(),
   TARGET: new Color( 0xdccb18 ).convertGammaToLinear( 2.2 ).getHex(),
-  PATH: new Color( 0x00a3af ).convertGammaToLinear( 2.2 ).getHex(),
+  PATH: new Color( 0x00a300 ).convertGammaToLinear( 2.2 ).getHex(),
   WAYPOINT: new Color( 0x00a3af ).convertGammaToLinear( 2.2 ).getHex(),
   CLAMPED_STEP: new Color( 0xdcd3b2 ).convertGammaToLinear( 2.2 ).getHex(),
   CLOSEST_NODE: new Color( 0x43676b ).convertGammaToLinear( 2.2 ).getHex(),
@@ -54,7 +54,7 @@ class PathfindingHelper extends Object3D {
 
     this._pathMarker = new Object3D();
 
-    this._pathLineMaterial = new LineBasicMaterial( { color: colors.PATH, linewidth: 2 } ) ;
+    this._pathLineMaterial = new LineBasicMaterial( { color: colors.PATH, lineWidth: 100} ) ;
     this._pathPointMaterial = new MeshBasicMaterial( { color: colors.WAYPOINT } );
     this._pathPointGeometry = new SphereBufferGeometry( 0.08 );
 
