@@ -3,6 +3,7 @@ function initGltf(){
         GROUND: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
         NAVMESH: new THREE.Color( 0xe5e5ff ).convertGammaToLinear( 2.2 ).getHex(),
     };
+    //加载模型
     const gltfLoader = new THREE.GLTFLoader();
     gltfLoader.load('resource/meshes/t2.glb', function (gltf){
         const levelMesh = gltf.scene.children[0];
@@ -23,6 +24,7 @@ function initGltf(){
         scene.add(levelMesh);
     }, null);
 
+    //加载导航网格
     gltfLoader.load('resource/meshes/t2.navmesh1.glb', function (gltf) {
         const navMesh = gltf.scene.children[0]
         navMesh.geometry.scale(3.3, 3.3, 3.3)
@@ -44,7 +46,7 @@ function initGltf(){
         }));
 
         //添加导航网格
-        scene.add(navmesh);
+        //scene.add(navmesh);
 
         groupID = pathFinder.getGroup(ZONE, playerPos);
     }, null);

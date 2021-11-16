@@ -12,10 +12,14 @@ import {
   Vector3,
 } from 'three';
 
+import { LineGeometry } from './LineGeometry.js'
+import { Line2 } from './Line2.js'
+import { LineMaterial } from './LineMaterial.js'
+
 const colors = {
   PLAYER: new Color( 0xee836f ).convertGammaToLinear( 2.2 ).getHex(),
   TARGET: new Color( 0xdccb18 ).convertGammaToLinear( 2.2 ).getHex(),
-  PATH: new Color( 0x00a300 ).convertGammaToLinear( 2.2 ).getHex(),
+  PATH: new Color( 0x99b3ff ).convertGammaToLinear( 2.2 ).getHex(),
   WAYPOINT: new Color( 0x00a3af ).convertGammaToLinear( 2.2 ).getHex(),
   CLAMPED_STEP: new Color( 0xdcd3b2 ).convertGammaToLinear( 2.2 ).getHex(),
   CLOSEST_NODE: new Color( 0x43676b ).convertGammaToLinear( 2.2 ).getHex(),
@@ -54,7 +58,11 @@ class PathfindingHelper extends Object3D {
 
     this._pathMarker = new Object3D();
 
-    this._pathLineMaterial = new LineBasicMaterial( { color: colors.PATH, lineWidth: 100} ) ;
+    this._pathLineMaterial = new LineMaterial({
+      color: colors.PATH,
+      linewidth: 20,
+
+    } ) ;
     this._pathPointMaterial = new MeshBasicMaterial( { color: colors.WAYPOINT } );
     this._pathPointGeometry = new SphereBufferGeometry( 0.08 );
 
@@ -92,21 +100,28 @@ class PathfindingHelper extends Object3D {
     path = [ this._playerMarker.position ].concat( path );
 
     // Draw debug lines
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new BufferAttribute(new Float32Array(path.length * 3), 3));
+    //使用buffergeometry无法修改线段宽度，故使用网格
+    const geometry = new LineGeometry();
+    //geometry.setAttribute('position', new BufferAttribute(new Float32Array(path.length * 3), 3));
+    let pointArr =[]
     for (let i = 0; i < path.length; i++) {
-      geometry.attributes.position.setXYZ(i, path[ i ].x, path[ i ].y + OFFSET, path[ i ].z);
+      pointArr.push(path[i].x);
+      pointArr.push(path[i].y);
+      pointArr.push(path[i].z);
     }
-    this._pathMarker.add( new Line( geometry, this._pathLineMaterial ) );
+    geometry.setPositions(pointArr);
+    this._pathLineMaterial.resolution.set(window.innerWidth,window.innerHeight);
+    this._pathMarker.add( new Line2( geometry, this._pathLineMaterial ) );
 
-    for ( let i = 0; i < path.length - 1; i++ ) {
-
-      const node = new Mesh( this._pathPointGeometry, this._pathPointMaterial );
-      node.position.copy( path[ i ] );
-      node.position.y += OFFSET;
-      this._pathMarker.add( node );
-
-    }
+    //显示拐点
+    // for ( let i = 0; i < path.length - 1; i++ ) {
+    //
+    //   const node = new Mesh( this._pathPointGeometry, this._pathPointMaterial );
+    //   node.position.copy( path[ i ] );
+    //   node.position.y += OFFSET;
+    //   this._pathMarker.add( node );
+    //
+    // }
 
     this._pathMarker.visible = true;
 
