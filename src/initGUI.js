@@ -12,13 +12,13 @@ function initGUI(){
             helper.setPath(path);
         },
 
-        开关坐标轴: function (){
-            if(isOpenAxis) isOpenAxis = false;
-            else isOpenAxis = true;
-        }
+        坐标轴: false,
+
+        镜头跟随: false
 
     }
     gui.add(params, '灯光亮度', 1, 2);
     gui.add(params, '重设位置');
-    gui.add(params, '开关坐标轴');
+    gui.add(params, '坐标轴');
+    gui.add(params, '镜头跟随');
 }

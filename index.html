@@ -136,7 +136,7 @@
     function render() {
         //调整灯光亮度
         directionalLight.intensity = params.灯光亮度;
-        if(isOpenAxis) {
+        if(params.坐标轴 == true) {
             scene.add(axis);
         }
         else{
