@@ -39,6 +39,7 @@
 
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
     camera.position.set(50, 50, 50);
+    
 
     const renderer = new THREE.WebGLRenderer({antialias:true});
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -136,11 +137,19 @@
     function render() {
         //调整灯光亮度
         directionalLight.intensity = params.灯光亮度;
+
         if(params.坐标轴 == true) {
             scene.add(axis);
         }
         else{
             scene.remove(axis);
+        }
+        if(params.镜头跟随 == true){
+            controls.enabled = false;
+            //camrea.position.set(playerPos.x, playerPos.y, playerPos.z);
+        }
+        else{
+            controls.enabled = true;
         }
         requestAnimationFrame(render);
         tick(clock.getDelta());
