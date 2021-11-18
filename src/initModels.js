@@ -5,7 +5,7 @@ function initGltf(){
     };
     //加载模型
     const gltfLoader = new THREE.GLTFLoader();
-    gltfLoader.load('../resource/meshes/t2.glb', function (gltf){
+    gltfLoader.load('resource/meshes/t2.glb', function (gltf){
         const levelMesh = gltf.scene.children[0];
         levelMesh.scale.set(-1, 1, 1)
         levelMesh.rotateZ(-Math.PI / 4)
@@ -25,7 +25,7 @@ function initGltf(){
     }, null);
 
     //加载导航网格
-    gltfLoader.load('../resource/meshes/t2.navmesh1.glb', function (gltf) {
+    gltfLoader.load('resource/meshes/t2.navmesh1.glb', function (gltf) {
         const navMesh = gltf.scene.children[0]
         navMesh.geometry.scale(3.3, 3.3, 3.3)
         const zone = THREE.Pathfinding.createZone(navMesh.geometry);
